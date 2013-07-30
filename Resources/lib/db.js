@@ -51,3 +51,16 @@ exports.list = list
 exports.add = add
 exports.del = del
 exports.bust = bust
+
+if(!Ti.App.Properties.getBool('seeded', false)) {
+	Ti.API.info('Seeding data');
+	var populateData = function(data) {
+		data.map(function(obj){
+			add(obj.name);
+		});
+	}
+	
+	var Net = require('/lib/network');
+	Net.getFugitives(populateData);
+	Ti.App.Properties.setBool('seeded', true);
+}

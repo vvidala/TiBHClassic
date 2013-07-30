@@ -27,7 +27,22 @@ function DetailWindow(data){
 		captureButton.addEventListener('click', function(){
 			var db = require('/lib/db');
 			db.bust(data.id);
-			self.close({animated: true});
+			
+			var net = require('/lib/network');
+			net.bustFugitive(Ti.Platform.macaddress, function(data){
+				Ti.UI.createAlertDialog({
+					message:data.message
+				}).show();
+			})
+			
+			if(Ti.Platform.name == 'android') {
+				setTimeout(function() {
+					self.close({animated: true});
+				}, 2000);
+			}
+			else {
+				self.close({animated: true});
+			}
 		});
 		
 		self.add(captureButton);
