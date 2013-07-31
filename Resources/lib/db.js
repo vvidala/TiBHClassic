@@ -1,5 +1,5 @@
 var db = Ti.Database.open('TiBountyHunter');
-db.execute('CREATE TABLE IF NOT EXISTS fugitives(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, captured INTEGER);');
+db.execute('CREATE TABLE IF NOT EXISTS fugitives(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, captured INTEGER, url TEXT);');
 db.close();
 
 function list(isAtLarge) {
@@ -11,6 +11,7 @@ function list(isAtLarge) {
 			title: cur.fieldByName('name'),
 			captured: (Number(cur.fieldByName('captured')) === 1),
 			id: cur.fieldByName('id'),
+			url: cur.fieldByName('url'),
 			hasChild:true,
 			color: '#fff'
 		}
@@ -47,10 +48,19 @@ function bust(id) {
 	Ti.App.fireEvent('db_updated');
 }
 
+function addPhoto(id, url) {
+	var db = Ti.Database.open('TiBountyHunter');
+	db.execute('UPDATE fugitives SET url = ? where id = ?;', url, id);
+	db.close();
+	
+	Ti.App.fireEvent('db_updated');
+}
+
 exports.list = list
 exports.add = add
 exports.del = del
 exports.bust = bust
+exports.addPhoto = addPhoto
 
 if(!Ti.App.Properties.getBool('seeded', false)) {
 	Ti.API.info('Seeding data');

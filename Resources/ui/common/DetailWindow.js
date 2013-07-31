@@ -14,8 +14,53 @@ function DetailWindow(data){
 		color: "#fff",
 		textAlign: 'center',
 		top: 10,
-		height: Ti.UI.SIZE
+		height: Ti.UI.SIZE,
+		font: {
+			fontSize: 18,
+			fontWeight: 'bold'
+		}
 	}));
+	
+	var imageView = Ti.UI.createImageView({
+		image: (data.url === null)?'/images/burglar.png':data.url,
+		width: 150,
+		height: 150,
+		top: 10
+	});
+	self.add(imageView);
+	
+	var addPhotoButton = Ti.UI.createButton({
+		title: L('add_photo'),
+		top: 10,
+		height: Ti.UI.SIZE,
+		width: 200
+	});
+	addPhotoButton.addEventListener('click', function(){
+		var gallary = Ti.Media.openPhotoGallery({
+			allowEditing: true,
+			animated: true,
+			autohide: true,
+			cancel: function(e){
+				Ti.API.info('Cancel button pressed');
+			},
+			success: function(e){
+				Ti.API.info('successfully received an image');
+				var image = e.media;
+				imageView.image = image;
+				
+				var file = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, 'photo_'+data.id+'.png');
+				file.write(image, false);
+				
+				var db = require('/lib/db');
+				db.addPhoto(data.id, file.nativePath);
+			},
+			error: function(e){
+				Ti.API.info('Oh crap!')
+			},
+			mediaTypes: [Ti.Media.MEDIA_TYPE_PHOTO]
+		});
+	});
+	self.add(addPhotoButton);
 	
 	if(!data.captured) {
 		var captureButton = Ti.UI.createButton({
