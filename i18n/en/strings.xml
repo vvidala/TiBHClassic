@@ -14,4 +14,5 @@
 	<string name="delete">Delete</string>
 	<string name="add">Add</string>
 	<string name="add_photo">Add Photo</string>
+	<string name="show_on_map">Show On Map</string>
 </resources>

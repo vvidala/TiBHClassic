@@ -70,27 +70,67 @@ function DetailWindow(data){
 			width: 200
 		});
 		captureButton.addEventListener('click', function(){
+			Ti.Geolocation.setPurpose('Tracking down the criminal scum..!');
+			
 			var db = require('/lib/db');
-			db.bust(data.id);
+			var lat, lon;
 			
-			var net = require('/lib/network');
-			net.bustFugitive(Ti.Platform.macaddress, function(data){
-				Ti.UI.createAlertDialog({
-					message:data.message
-				}).show();
-			})
+			if(Ti.Geolocation.locationServicesEnabled){
+				if(Ti.Platform.osname === 'android') {
+					Ti.Geolocation.accuracy = Ti.Geolocation.ACCURACY_HIGH;
+				} else {
+					Ti.Geolocation.accuracy = Ti.Geolocation.ACCURACY_BEST;
+				}
+				
+				Ti.Geolocation.getCurrentPosition(function(e) {
+					if(!e.error) {
+						var lon = e.coords.longitude;
+						var lat = e.coords.latitude;
+						db.bust(data.id, lat, lon);
+						
+						var net = require('/lib/network');
+						net.bustFugitive(Ti.Platform.macaddress, function(data){
+							Ti.UI.createAlertDialog({
+								message:data.message
+							}).show();
+						})
+						
+						if(Ti.Platform.name == 'android') {
+							setTimeout(function() {
+								self.close({animated: true});
+							}, 2000);
+						}
+						else {
+							self.close({animated: true});
+						}
+					}
+					else {
+						Ti.UI.createAlertDialog({
+							title: "Geo Error",
+							message: "Cannot get geo-location!!"
+						}).show();
+					}
+				});
+			}
 			
-			if(Ti.Platform.name == 'android') {
-				setTimeout(function() {
-					self.close({animated: true});
-				}, 2000);
-			}
-			else {
-				self.close({animated: true});
-			}
+			
 		});
 		
 		self.add(captureButton);
+	}
+	else {
+		var showMapButton = Ti.UI.createButton({
+			title: L('show_on_map'),
+			top: 10,
+			width: 200,
+			height: Ti.UI.SIZE
+		});
+		showMapButton.addEventListener('click', function(e){
+			var MapWindow = require('ui/common/MapWindow');
+			var mapView = new MapWindow(data);
+			mapView.open({modal: true});
+		});
+		self.add(showMapButton);
 	}
 	
 	var deleteButton = Ti.UI.createButton({
